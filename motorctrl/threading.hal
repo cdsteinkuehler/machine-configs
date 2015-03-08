@@ -1,0 +1,14 @@
+
+# ################################################
+# THREADS
+# ################################################
+
+addf bb_gpio.read			servo-thread
+addf eqep.update                	servo-thread
+addf pid.0.do-pid-calcs			servo-thread
+addf hbridge.0				servo-thread
+addf actacc 				servo-thread
+addf hpg.update				servo-thread
+addf bb_gpio.write			servo-thread
+
+start

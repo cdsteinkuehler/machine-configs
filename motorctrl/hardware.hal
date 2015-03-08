@@ -1,0 +1,89 @@
+
+loadrt hbridge
+loadrt hal_bb_gpio output_pins=807,813,815,817 input_pins=808,810,812,814,816
+loadrt hal_arm335xQEP encoders=eQEP0
+loadrt [PRUCONF](DRIVER) prucode=[HAL](HAL_RTMOD_DIR)/[PRUCONF](PRUBIN) [PRUCONF](CONFIG) halname=hpg
+
+# ################################################
+# A/B encoder, eQEP0
+# ################################################
+
+# pins of eQEP0, and wiring to Hall sensor
+# motor type: http://www.dfrobot.com/wiki/index.php/12V_DC_Motor_251rpm_w/Encoder_(SKU:_FIT0186)
+
+# 9/25  strobe - not connected
+# 9/27  B in  - Hall sensor pin A - white
+# 9/41  index - not connected
+# 9/42  A in  - Hall sensor pin B - yellow
+# VCC 3.3V - blue
+# GND - green
+
+# 43.7:1 gear
+# encoder resolution of 64 counts per revolution of the motor shaft,
+# 2797 counts per revolution of the gearbox’s output shaft. 
+
+# for eQEP0.position in shaft revs:
+setp eQEP0.position-scale 2797.0
+
+# feed into pid
+net motor-feedback eQEP0.position
+
+# for UI feedback
+net velocity       eQEP0.velocity
+
+# ################################################
+# PRU PWMGENS (2)
+# ################################################
+
+setp hpg.pwmgen.00.pwm_period       500000
+setp hpg.pwmgen.00.out.00.pin       809
+setp hpg.pwmgen.00.out.01.pin       811
+
+# ################################################
+# Hbridge signal driver
+# ################################################
+
+# limit PWM signal so power supply doesnt cop out
+setp hbridge.0.maxout 0.8
+
+# ################################################
+# wiring
+# ################################################
+
+net up   hbridge.0.up   hpg.pwmgen.00.out.00.value
+net down hbridge.0.down hpg.pwmgen.00.out.01.value
+
+# pid out-> H bridge
+newsig motor-output float
+net motor-output hbridge.0.command
+
+net pwm-enable hbridge.0.enable-out
+net pwm-enable bb_gpio.p8.out-17
+net pwm-enable hpg.pwmgen.00.out.00.enable 
+net pwm-enable hpg.pwmgen.00.out.01.enable 
+
+newsig led bit
+
+# H-bridge activation
+net led hbridge.0.enable
+
+# prototype cape Led #4
+net led  bb_gpio.p8.out-07
+
+# led is also motor enable, driven by UI
+net led hbridge.0.enable
+
+# motor H-Bridge connection
+# wiring of IBT-2:
+# 
+# IBT-2 pin 1 (RPWM) to P8_09
+# IBT-2 pin 2 (LPWM) to P8_11
+# IBT-2 pins 3 (R_EN), 4 (L_EN), 7 (VCC) to 3.3V
+# IBT-2 pin 8 (GND) to GND
+# IBT-2 pins 5 (R_IS) and 6 (L_IS) not connected
+
+
+
+
+
+

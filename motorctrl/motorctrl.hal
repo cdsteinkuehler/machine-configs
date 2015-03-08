@@ -1,0 +1,86 @@
+# set logging to 'pretty high'
+log rt 5
+log user 5
+
+# start haltalk server
+# add --debug 5 to log message transactions on halcmd stderr
+#loadusr -W haltalk --debug 5
+loadusr -W haltalk
+
+# the control setup
+
+# syntax: newthread <name> <periodns> [fp|nofp] [cpu=<int>]
+# default is nofp
+newthread servo-thread 1000000 fp
+
+loadrt pid num_chan=1
+
+
+# differentiate pos to get vel, vel to get acc
+loadrt ddt names=actacc
+
+# wait the halcmd script until the UI has created the remote component 'motorctrl':
+# waitexists motorctrl
+
+# OR preconfigure the remote component like so
+# in this case no waiting required
+# pin count, name, type, direction must match exactly what
+# is in the GUI
+sete 1 0.1
+sete 2 0.5
+sete 3 0.1
+sete 4 1.0
+newcomp motorctrl timer=100 # acceptdefaults
+newpin motorctrl motorctrl.Igain         float out
+newpin motorctrl motorctrl.Pgain         float out
+newpin motorctrl motorctrl.Dgain         float out
+
+newpin motorctrl motorctrl.cmd_pos       float out
+newpin motorctrl motorctrl.fb_acc        float in eps=4
+newpin motorctrl motorctrl.fb_acc.scale  float in eps=1
+newpin motorctrl motorctrl.fb_pos        float in eps=1
+newpin motorctrl motorctrl.fb_pos.scale  float in eps=1
+newpin motorctrl motorctrl.fb_vel        float in eps=1
+newpin motorctrl motorctrl.fb_vel.scale  float in eps=1
+
+newpin motorctrl motorctrl.led1          bit in
+newpin motorctrl motorctrl.scope_trigger bit out
+newpin motorctrl motorctrl.togglebutton1 bit out
+newpin motorctrl motorctrl.togglebutton1-not bit out
+ready  motorctrl
+
+# PID
+newsig Pgain float
+newsig Igain float
+newsig Dgain float
+
+sets Pgain 1.0
+sets Igain 0.01
+sets Dgain 0.01
+
+net Pgain pid.0.Pgain motorctrl.Pgain
+net Igain pid.0.Igain motorctrl.Igain
+net Dgain pid.0.Dgain motorctrl.Dgain
+
+net cmd-pos pid.0.command
+net cmd-pos motorctrl.cmd_pos 
+
+net motor-output     pid.0.output
+
+net motor-feedback   pid.0.feedback
+net motor-feedback   motorctrl.fb_pos
+
+net velocity motorctrl.fb_vel
+net velocity actacc.in
+
+net actacct actacc.out
+net actacct motorctrl.fb_acc
+
+# prevent pid runup if disabled
+net led pid.0.enable
+
+# make led follow togglebutton for now:
+net led motorctrl.led1 <== motorctrl.togglebutton1
+
+# make trigger pin a signal - halscope wants signals to trigger on:
+net scope-trigger motorctrl.scope_trigger
