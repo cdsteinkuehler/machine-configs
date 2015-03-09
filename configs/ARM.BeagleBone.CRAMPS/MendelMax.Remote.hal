@@ -9,6 +9,8 @@
 # Launch the setup script to make sure hardware setup looks good
 loadusr -w ./setup.sh
 
+# start haltalk server
+loadusr -W haltalk
 
 # ###################################
 # Core EMC/HAL Loads
@@ -18,8 +20,7 @@ loadusr -w ./setup.sh
 loadrt trivkins
 
 # motion controller, get name and thread periods from ini file
-loadrt tp
-loadrt [EMCMOT]EMCMOT servo_period_nsec=[EMCMOT]SERVO_PERIOD num_joints=[TRAJ]AXES tp=tp kins=trivkins
+loadrt [EMCMOT]EMCMOT servo_period_nsec=[EMCMOT]SERVO_PERIOD num_joints=[TRAJ]AXES
 
 
 # load low-level drivers
