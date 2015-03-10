@@ -31,9 +31,9 @@ sete 2 0.5
 sete 3 0.1
 sete 4 1.0
 newcomp motorctrl timer=100 # acceptdefaults
-newpin motorctrl motorctrl.Igain         float out
-newpin motorctrl motorctrl.Pgain         float out
-newpin motorctrl motorctrl.Dgain         float out
+newpin motorctrl motorctrl.Red           float out
+newpin motorctrl motorctrl.Green         float out
+newpin motorctrl motorctrl.Blue          float out
 
 newpin motorctrl motorctrl.cmd_pos       float out
 newpin motorctrl motorctrl.fb_acc        float in eps=4
@@ -50,17 +50,17 @@ newpin motorctrl motorctrl.togglebutton1-not bit out
 ready  motorctrl
 
 # PID
-newsig Pgain float
-newsig Igain float
-newsig Dgain float
+newsig Red float
+newsig Green float
+newsig Blue float
 
-sets Pgain 1.0
-sets Igain 0.01
-sets Dgain 0.01
+sets Red   5.0
+sets Green 5.0
+sets Blue  5.0
 
-net Pgain pid.0.Pgain motorctrl.Pgain
-net Igain pid.0.Igain motorctrl.Igain
-net Dgain pid.0.Dgain motorctrl.Dgain
+net Red   pid.0.Pgain motorctrl.Red
+net Green pid.0.Igain motorctrl.Green
+net Blue  pid.0.Dgain motorctrl.Blue
 
 net cmd-pos pid.0.command
 net cmd-pos motorctrl.cmd_pos 

@@ -29,7 +29,7 @@ if args.debug:
 
 if not args.local:
     # override default $MACHINEKIT_INI with a version which was REMOTE=1
-    launcher.set_machinekit_ini('machinekit.ini')
+    launcher.set_machinekit_ini('/etc/linuxcnc/machinekit.ini')
 
 try:
     launcher.check_installation()

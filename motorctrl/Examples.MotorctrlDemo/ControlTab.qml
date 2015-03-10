@@ -220,7 +220,7 @@ Tab {
                                 id: cmdMaxVelSlider
                                 Layout.alignment: Layout.Center
                                 Layout.preferredWidth: main.width * 0.25
-                                name: "Pgain"
+                                name: "Red"
                                 minimumValue: 0
                                 maximumValue: 5
                                 value: 2
@@ -228,7 +228,7 @@ Tab {
                             }
                             Label {
                                 Layout.fillWidth: true
-                                text: qsTr("P")
+                                text: qsTr("Red")
                                 horizontalAlignment: Text.AlignHCenter
                             }
                         }
@@ -238,7 +238,7 @@ Tab {
                                 id: cmdMaxAccSlider
                                 Layout.alignment: Layout.Center
                                 Layout.preferredWidth: main.width * 0.25
-                                name: "Igain"
+                                name: "Green"
                                 minimumValue: 0
                                 maximumValue: 5
                                 value: 0.01
@@ -246,7 +246,7 @@ Tab {
                             }
                             Label {
                                 Layout.fillWidth: true
-                                text: qsTr("I")
+                                text: qsTr("Green")
                                 horizontalAlignment: Text.AlignHCenter
                             }
                         }
@@ -256,7 +256,7 @@ Tab {
                                 id: lowpassgainSlider
                                 Layout.alignment: Layout.Center
                                 Layout.preferredWidth: main.width * 0.25
-                                name: "Dgain"
+                                name: "Blue"
                                 minimumValue: 0
                                 maximumValue: 3
                                 value: 0.01
@@ -265,7 +265,7 @@ Tab {
                             }
                             Label {
                                 Layout.fillWidth: true
-                                text: qsTr("D")
+                                text: qsTr("Blue")
                                 horizontalAlignment: Text.AlignHCenter
                             }
                         }
