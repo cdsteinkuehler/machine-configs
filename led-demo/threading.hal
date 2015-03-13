@@ -1,0 +1,17 @@
+
+# ################################################
+# THREADS
+# ################################################
+
+addf bb_gpio.read			servo-thread
+addf pwmgen.make-pulses                 servo-thread
+addf pwmgen.update                      servo-thread
+addf or2.0                              servo-thread
+addf mux2.0                             servo-thread
+addf mux2.1                             servo-thread
+addf mux2.2                             servo-thread
+addf tristate-float.0                   servo-thread
+addf hpg.update				servo-thread
+addf bb_gpio.write			servo-thread
+
+start

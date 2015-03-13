@@ -1,0 +1,72 @@
+
+loadrt hal_bb_gpio output_pins=826,923,925 input_pins=817
+loadrt [PRUCONF](DRIVER) prucode=[HAL](HAL_RTMOD_DIR)/[PRUCONF](PRUBIN) [PRUCONF](CONFIG) halname=hpg
+loadrt pwmgen output_type=1
+loadrt or2 count=1
+loadrt mux2 count=3
+loadrt tristate_float count=1
+
+# ################################################
+# PRU PWMGENS (3)
+# ################################################
+
+setp hpg.pwmgen.00.pwm_period       500000
+setp hpg.pwmgen.00.out.00.pin       915     # FET-2 Red
+setp hpg.pwmgen.00.out.01.pin       927     # FET-3 Green
+setp hpg.pwmgen.00.out.02.pin       921     # FET-4 Blue
+
+
+# ################################################
+# Blink PWMGEN and mux
+# ################################################
+
+setp pwmgen.0.scale 100.0
+setp mux2.0.in0       0.0
+setp mux2.1.in0       0.0
+setp mux2.2.in0       0.0
+
+# ################################################
+# wiring
+# ################################################
+
+newsig red float
+newsig grn float
+newsig blu float
+
+net red mux2.0.in1
+net grn mux2.1.in1
+net blu mux2.2.in1
+
+setp hpg.pwmgen.00.out.00.scale 100.0
+setp hpg.pwmgen.00.out.01.scale 100.0
+setp hpg.pwmgen.00.out.02.scale 100.0
+
+net pwm-enable bb_gpio.p9.out-23
+net pwm-enable hpg.pwmgen.00.out.00.enable 
+net pwm-enable hpg.pwmgen.00.out.01.enable 
+net pwm-enable hpg.pwmgen.00.out.02.enable 
+
+# prototype cape Led #4
+net pwm-enable  bb_gpio.p9.out-25
+
+newsig rate float
+newsig duty float
+newsig freq float
+
+net freq tristate-float.0.in
+net tri-freq tristate-float.0.out pwmgen.0.pwm-freq
+setp tristate-float.0.enable true
+
+net pwm-enable pwmgen.0.enable
+net duty pwmgen.0.value
+
+newsig solid bit
+
+net blink pwmgen.0.pwm or2.0.in0
+net solid or2.0.in1
+
+net blinken or2.0.out mux2.0.sel mux2.1.sel mux2.2.sel
+net mxred mux2.0.out hpg.pwmgen.00.out.00.value
+net mxgrn mux2.1.out hpg.pwmgen.00.out.01.value
+net mxblu mux2.2.out hpg.pwmgen.00.out.02.value
+

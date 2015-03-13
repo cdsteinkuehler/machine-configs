@@ -1,0 +1,68 @@
+# set logging to 'pretty high'
+log rt 5
+log user 5
+
+# start haltalk server
+# add --debug 5 to log message transactions on halcmd stderr
+#loadusr -W haltalk --debug 5
+loadusr -W haltalk
+
+# the control setup
+
+# syntax: newthread <name> <periodns> [fp|nofp] [cpu=<int>]
+# default is nofp
+newthread servo-thread 1000000 fp
+
+#loadrt pid num_chan=1
+
+
+# differentiate pos to get vel, vel to get acc
+#loadrt ddt names=actacc
+
+# wait the halcmd script until the UI has created the remote component 'led-demo':
+# waitexists led-demo
+
+# OR preconfigure the remote component like so
+# in this case no waiting required
+# pin count, name, type, direction must match exactly what
+# is in the GUI
+sete 1 0.1
+sete 2 0.5
+sete 3 0.1
+sete 4 1.0
+newcomp led-demo timer=100 # acceptdefaults
+newpin led-demo led-demo.Red           float out
+newpin led-demo led-demo.Green         float out
+newpin led-demo led-demo.Blue          float out
+
+newpin led-demo led-demo.BlinkRate     float out
+newpin led-demo led-demo.BlinkFreq     float out
+newpin led-demo led-demo.BlinkDuty     float out
+
+newpin led-demo led-demo.led1          bit in
+newpin led-demo led-demo.togglebutton1 bit out
+newpin led-demo led-demo.togglebutton2 bit out
+ready  led-demo
+
+# System Power
+net pwm-enable led-demo.led1 <== led-demo.togglebutton1
+
+# LED Color
+sets red 100.0
+sets grn  84.3
+sets blu  36.9
+
+net red led-demo.Red
+net grn led-demo.Green
+net blu led-demo.Blue
+
+# Blink LEDs
+sets rate 1000
+sets freq 1
+sets duty 50
+
+net rate led-demo.BlinkRate
+net freq led-demo.BlinkFreq
+net duty led-demo.BlinkDuty
+
+net solid led-demo.togglebutton2
