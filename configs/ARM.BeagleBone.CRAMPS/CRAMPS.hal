@@ -18,6 +18,7 @@ loadusr -w ./setup.sh
 loadrt trivkins
 
 # motion controller, get name and thread periods from ini file
+# trajectory planner
 loadrt tp
 loadrt [EMCMOT]EMCMOT servo_period_nsec=[EMCMOT]SERVO_PERIOD num_joints=[TRAJ]AXES tp=tp kins=trivkins
 
@@ -27,33 +28,52 @@ loadrt hal_bb_gpio output_pins=816,822,823,824,825,826,914,923,925 input_pins=80
 loadrt [PRUCONF](DRIVER) prucode=$(HAL_RTMOD_DIR)/[PRUCONF](PRUBIN) [PRUCONF](CONFIG) halname=hpg
 loadrt pid num_chan=2
 loadrt limit1 count=2
+loadrt CoreXY
 
 
 # Python user-mode HAL module to read ADC value and generate a thermostat output for PWM
-# t = Thermistor table (only epcos_B57560G1104 or 1 supported for now)
-# a = analog input channel
-loadusr -Wn Therm ./ReadTemp.py -n Therm --num_chan 2 -t 1 1 -a 4 5
+# c = analog input channel and thermistor table
+loadusr -Wn Therm hal_temp_bbb -n Therm -c 04:semitec_104GT_2,05:epcos_B57560G1104 -b CRAMPS
+
+
 
 # ################################################
 # THREADS
 # ################################################
 
-addf hpg.capture-position   servo-thread
 addf bb_gpio.read                         servo-thread
+addf hpg.capture-position                 servo-thread
+addf CoreXY.0.read                        servo-thread
 addf motion-command-handler               servo-thread
 addf motion-controller                    servo-thread
 addf pid.0.do-pid-calcs                   servo-thread
 addf pid.1.do-pid-calcs                   servo-thread
 addf limit1.0                             servo-thread
 addf limit1.1                             servo-thread
-addf hpg.update             servo-thread
+addf CoreXY.0.write                       servo-thread
+addf hpg.update                           servo-thread
 addf bb_gpio.write                        servo-thread
-       
+
 
 # ######################################################
 # Axis-of-motion Specific Configs (not the GUI)
 # ######################################################
 
+# ################
+# CoreXZ Setup
+# ################
+net corexz.X.pos-cmd <= axis.0.motor-pos-cmd
+net corexz.X.pos-cmd => CoreXY.0.axis.0.pos-cmd
+net corexz.Z.pos-cmd <= axis.2.motor-pos-cmd
+net corexz.Z.pos-cmd => CoreXY.0.axis.1.pos-cmd
+
+net corexz.X.pos-fb  <= CoreXY.0.axis.0.pos-fb
+net corexz.X.pos-fb  => axis.0.motor-pos-fb
+net corexz.Z.pos-fb  <= CoreXY.0.axis.1.pos-fb
+net corexz.Z.pos-fb  => axis.2.motor-pos-fb
+
+setp CoreXY.0.axis.0.gain 1.0
+setp CoreXY.0.axis.1.gain -1.5
 
 # ################
 # X [0] Axis
@@ -63,16 +83,16 @@ addf bb_gpio.write                        servo-thread
 newsig emcmot.00.enable bit
 sets emcmot.00.enable FALSE
 
-net emcmot.00.enable <= axis.0.amp-enable-out 
+net emcmot.00.enable <= axis.0.amp-enable-out
 net emcmot.00.enable => hpg.stepgen.00.enable
 
 
 # position command and feedback
-net emcmot.00.pos-cmd <= axis.0.motor-pos-cmd
+net emcmot.00.pos-cmd <= CoreXY.0.joint.0.pos-cmd
 net emcmot.00.pos-cmd => hpg.stepgen.00.position-cmd
 
 net motor.00.pos-fb <= hpg.stepgen.00.position-fb
-net motor.00.pos-fb => axis.0.motor-pos-fb
+net motor.00.pos-fb => CoreXY.0.joint.0.pos-fb
 
 
 # timing parameters
@@ -102,7 +122,7 @@ setp hpg.stepgen.00.dirpin         812
 newsig emcmot.01.enable bit
 sets emcmot.01.enable FALSE
 
-net emcmot.01.enable <= axis.1.amp-enable-out 
+net emcmot.01.enable <= axis.1.amp-enable-out
 net emcmot.01.enable => hpg.stepgen.01.enable
 
 
@@ -141,16 +161,16 @@ setp hpg.stepgen.01.dirpin         814
 newsig emcmot.02.enable bit
 sets emcmot.02.enable FALSE
 
-net emcmot.02.enable <= axis.2.amp-enable-out 
+net emcmot.02.enable <= axis.2.amp-enable-out
 net emcmot.02.enable => hpg.stepgen.02.enable
 
 
 # position command and feedback
-net emcmot.02.pos-cmd <= axis.2.motor-pos-cmd
+net emcmot.02.pos-cmd <= CoreXY.0.joint.1.pos-cmd
 net emcmot.02.pos-cmd => hpg.stepgen.02.position-cmd
 
 net motor.02.pos-fb <= hpg.stepgen.02.position-fb
-net motor.02.pos-fb => axis.2.motor-pos-fb
+net motor.02.pos-fb => CoreXY.0.joint.1.pos-fb
 
 
 # timing parameters
@@ -180,7 +200,7 @@ setp hpg.stepgen.02.dirpin         818
 newsig emcmot.03.enable bit
 sets emcmot.03.enable FALSE
 
-net emcmot.03.enable <= axis.3.amp-enable-out 
+net emcmot.03.enable <= axis.3.amp-enable-out
 net emcmot.03.enable => hpg.stepgen.03.enable
 
 
@@ -282,7 +302,7 @@ setp bb_gpio.p9.in-13.invert 1
 # ################
 
 # There is currently no driver to generate pulses for actual
-# radio-control style servos, but the buffered 5V output 
+# radio-control style servos, but the buffered 5V output
 # signals can be used as GPIO
 
 # !!! WARNING !!!
@@ -362,7 +382,7 @@ setp hpg.pwmgen.00.out.05.enable    1
 setp hpg.pwmgen.00.out.05.value     0.0
 
 # PID for Extruder 0 temperature control
-net e0.temp.meas    <= Therm.temp0
+net e0.temp.meas    <= Therm.ch-04.value
 net e0.temp.meas    => pid.0.feedback
 
 sets e0.temp.set  0
@@ -378,7 +398,7 @@ net e0.heaterl => hpg.pwmgen.00.out.01.value
 setp limit1.0.min 0
 
 # PID for Bed temperature control
-net bed.temp.meas    <= Therm.temp1
+net bed.temp.meas    <= Therm.ch-05.value
 net bed.temp.meas    => pid.1.feedback
 
 sets bed.temp.set  0
@@ -395,23 +415,23 @@ setp limit1.1.min 0
 
 # PID Parameters for adjusting temperature control
 # Extruder
-#setp pid.0.FF0      0  
-#setp pid.0.FF1      0  
-#setp pid.0.FF2      0  
+#setp pid.0.FF0      0
+#setp pid.0.FF1      0
+#setp pid.0.FF2      0
 setp pid.0.Pgain  0.30
 setp pid.0.Igain  0.00001
 setp pid.0.Dgain  0.9375
 setp pid.0.maxerrorI 1.0
-setp pid.0.bias    0.5  
+setp pid.0.bias    0.5
 setp pid.0.enable   1
 
 # Bed
-#setp pid.1.FF0      0  
-#setp pid.1.FF1      0  
-#setp pid.1.FF2      0  
+#setp pid.1.FF0      0
+#setp pid.1.FF1      0
+#setp pid.1.FF2      0
 setp pid.1.Pgain  1
 setp pid.1.Igain  0.0
 setp pid.1.Dgain  0.0
 setp pid.1.maxerrorI 1.0
-setp pid.1.bias    0.5  
+setp pid.1.bias    0.5
 setp pid.1.enable   1
