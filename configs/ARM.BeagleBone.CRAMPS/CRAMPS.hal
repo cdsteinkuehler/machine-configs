@@ -72,7 +72,7 @@ net corexz.X.pos-fb  => axis.0.motor-pos-fb
 net corexz.Z.pos-fb  <= CoreXY.0.axis.1.pos-fb
 net corexz.Z.pos-fb  => axis.2.motor-pos-fb
 
-setp CoreXY.0.axis.0.gain 1.0
+setp CoreXY.0.axis.0.gain 0.5
 setp CoreXY.0.axis.1.gain -1.5
 
 # ################
