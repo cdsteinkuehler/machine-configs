@@ -1,0 +1,11 @@
+
+This configuration is for a standard MendelMax 1.5 3D printer.
+
+Hardware is a CRAMPS board with 1/16 microstepping drivers
+
+The remote configuration launches a Machinetalk process and requires
+a remote application for the UI.
+
+The standard configuration uses the built-in HDMI output to run the
+axis GUI.
+
