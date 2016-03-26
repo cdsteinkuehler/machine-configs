@@ -1,10 +1,12 @@
 # Initial system setup:
 
 git config --global user.email charles@steinkuehler.net
-git config --global user.name Charles Steinkuehler
+git config --global user.name "Charles Steinkuehler"
 sudo update-alternatives --config editor
+  select vim.basic
 
-edit /etc/vim/vimrc:
+sudo vi /etc/vim/vimrc
+  Uncomment:
   syntax on
   set background=dark
 
