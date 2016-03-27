@@ -1,0 +1,46 @@
+EggBot Tool-chain HOWTO
+
+Start with Inkscape and the gcodetools extension
+
+https://inkscape.org/en/
+http://www.cnc-club.ru/forum/viewtopic.php?f=15&t=35&start=40
+
+Find an EggBot svg file or create your own.  The page size should be
+3200 x 800 px (px is the native unit in Inkscape)
+
+Add origin/scale points using gcodetools:
+
+  Extensions -> Gcodetools -> Orientation points
+    2-points mode
+    Z depth -1.0
+    units: mm
+    <Apply>
+
+Move origin to center of drawing:
+  Select origin points in Inkscape
+  Transform -> Move
+    H: 1600
+    V:  400
+    <Apply>
+
+Set scale for 320.0 mm workspace:
+  Select right-hand coordinate (should read: 100.0; 0.0; -1.0 )
+    Select text-tool
+    <ctrl>-click on text
+    Change to: 35.43307; 0.0; -1.0
+
+
+Make sure all text & such is turned to paths!
+  ...detail to come...
+
+
+Generate gcode file:
+  Extensions -> Gcodetools -> Path to Gcode
+    Preferences:
+      Verify filename & output directory
+      Z safe height: 1.0
+      Units: mm
+    Path to Gcode:
+      Biarc interpolation tolerance: 0.1
+      <Apply>
+

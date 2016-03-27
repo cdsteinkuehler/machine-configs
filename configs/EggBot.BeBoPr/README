@@ -1,0 +1,32 @@
+
+This configuration drives an EggBot style printer, mostly crafted from
+the "Improved printable eggbot" by nglasson:
+
+http://www.thingiverse.com/thing:263668
+
+Using a BeagleBone Black, a BeBoPr + Bridge cape, two Pololu type
+stepper drivers, and a small R/C servo.
+
+The X axis controlls the rotation of the egg
+
+The Y axis controlls the angle of the pen
+
+The Z axis controlls pen up/down
+
+Current X and Y settings are appropriate for a typical EggBot style
+printer and Inkscape plug-in, with the following settings, chosen to
+map the default EggBot Inkscape template reasonably into mm:
+
+X = 360 degrees :  -160.0 to +160.0 mm
+Y =  90 degrees :   -40.0 to  +40.0 mm
+Z =  arbitrary  :    -5.0 to   +5.0 mm for full servo travel
+
+Typical Z values used:
+  Pen Down = -1.0
+  Pen Up   = +1.0
+  Zero Z and adjust pen as needed for whatever you are drawing on 
+
+Typical Inkscape 3200x800 px image needs to be scaled to print correctly
+with this setup.  See EggBot.HOWTO.txt for details on generating gcode
+from a vector image.
+
