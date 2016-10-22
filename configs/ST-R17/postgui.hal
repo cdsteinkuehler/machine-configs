@@ -1,0 +1,7 @@
+net ui.joint.0 joint.0.pos-cmd pyvcp.joint0
+net ui.joint.1 joint.1.pos-cmd pyvcp.joint1
+net ui.joint.2 joint.2.pos-cmd pyvcp.joint2
+net ui.joint.3 joint.3.pos-cmd pyvcp.joint3
+net ui.joint.4 joint.4.pos-cmd pyvcp.joint4
+net ui.joint.5 joint.5.pos-cmd pyvcp.joint5
+

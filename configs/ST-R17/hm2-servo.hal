@@ -93,7 +93,7 @@ setp genserkins.ALPHA-0 0
 setp genserkins.ALPHA-1 1.570796326
 setp genserkins.ALPHA-2 0
 setp genserkins.ALPHA-3 0
-setp genserkins.ALPHA-4 -1.570796326
+setp genserkins.ALPHA-4 1.570796326
 setp genserkins.ALPHA-5 1.570796326
 
 # Offset along new Z to next common normal (X)
@@ -102,7 +102,7 @@ setp genserkins.D-1 0
 setp genserkins.D-2 0
 setp genserkins.D-3 0
 setp genserkins.D-4 160.0
-setp genserkins.D-5 10.0
+setp genserkins.D-5 -50.0
 
 # Puma-style end-effector: twist -> pivot -> pivot
 ## A or radius (distance from previous Z to new Z along common normal (X))
@@ -386,7 +386,7 @@ setp hm2_[HOSTMOT2](BOARD).0.stepgen.03.dirhold   [HOSTMOT2]DIR_HOLD
 net emcmot.03.motor-pos-cmd sum2.0.in0
 net emcmot.04.motor-pos-cmd joint.4.motor-pos-cmd sum2.0.in1
 
-setp sum2.0.gain0 -1.0
+setp sum2.0.gain0 1.0
 setp sum2.0.gain1 1.0
 
 net hand.motor-pos-cmd sum2.0.out
