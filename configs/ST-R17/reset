@@ -1,0 +1,5 @@
+#!/bin/sh
+
+halcmd setp minmax.0.reset 1
+halcmd setp minmax.0.reset 0
+

@@ -1,0 +1,12 @@
+#!/usr/bin/halcmd -f
+
+loadrt minmax
+loadrt conv_s32_float
+addf minmax.0 servo-thread
+addf conv-s32-float.0 servo-thread
+net time servo-thread.time conv-s32-float.0.in
+net timef conv-s32-float.0.out minmax.0.in
+
+net time.min minmax.0.min
+net time.max minmax.0.max
+
