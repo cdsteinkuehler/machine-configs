@@ -6,7 +6,7 @@ sudo update-alternatives --config editor
   select vim.basic
 
 # Enable screen saver
-vi ~/vi .config/lxsession/LXDE/autostart
+vi ~/.config/lxsession/LXDE/autostart
   Uncomment xscreensaver entry
 
 sudo vi /etc/vim/vimrc
