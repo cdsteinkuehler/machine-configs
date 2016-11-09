@@ -13,8 +13,10 @@ sudo vi /etc/vim/vimrc
   Uncomment:
   syntax on
   set background=dark
+  
+  Add syntax highlighting for *.comp files (to vimrc or vimrc.local or ~/.vimrc)
+  autocmd BufNewFile,BufRead *.comp set syntax=c 
 
 # Clone this repository into the ~/machinekit directory
 cd
 git clone https://github.com/cdsteinkuehler/machine-configs.git machinekit
-
