@@ -80,14 +80,6 @@ addf hm2_[HOSTMOT2](BOARD).0.write         servo-thread
 # i:=[0-5] : A(i) and Alpha(i) refer to current joint(i), D referrs to next joint(i+1)
 # Order of operations is Alpha -> A/r -> Theta (commanded joint position) -> D
 
-# A or radius (distance from previous Z to new Z along common normal (X))
-setp genserkins.A-0 0
-setp genserkins.A-1 0
-setp genserkins.A-2 375.0
-setp genserkins.A-3 375.0
-setp genserkins.A-4 0
-setp genserkins.A-5 0
-
 # Angle about common normal (X) from old Z to new Z, 0 for parallel joints
 setp genserkins.ALPHA-0 0
 setp genserkins.ALPHA-1 1.570796326
@@ -96,13 +88,31 @@ setp genserkins.ALPHA-3 0
 setp genserkins.ALPHA-4 1.570796326
 setp genserkins.ALPHA-5 1.570796326
 
+# A or radius (distance from previous Z to new Z along common normal (X))
+setp genserkins.A-0 0
+setp genserkins.A-1 0
+setp genserkins.A-2 375.0
+setp genserkins.A-3 375.0
+setp genserkins.A-4 0
+setp genserkins.A-5 0
+
+# Theta (commanded joint position) is applied
+# Rotation is around new Z
+# Home positions:
+# Theta-0   0.0
+# Theta-1  90.0
+# Theta-2 -90.0
+# Theta-3  90.0
+# Theta-4  90.0
+# Theta-5   0.0
+
 # Offset along new Z to next common normal (X)
 setp genserkins.D-0 355.0
 setp genserkins.D-1 0
 setp genserkins.D-2 0
 setp genserkins.D-3 0
 setp genserkins.D-4 160.0
-setp genserkins.D-5 -50.0
+setp genserkins.D-5  50.0
 
 # Puma-style end-effector: twist -> pivot -> pivot
 ## A or radius (distance from previous Z to new Z along common normal (X))
