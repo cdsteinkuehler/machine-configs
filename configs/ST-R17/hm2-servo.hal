@@ -40,7 +40,7 @@ loadrt pid num_chan=5
 loadrt hostmot2
 
 # load low-level driver
-loadrt [HOSTMOT2](DRIVER) config=[HOSTMOT2](CONFIG)
+loadrt [HOSTMOT2](DRIVER) [HOSTMOT2](IPADDR) config=[HOSTMOT2](CONFIG)
 
 #setp hm2_[HOSTMOT2](BOARD).0.pwmgen.pwm_frequency 40000
 
