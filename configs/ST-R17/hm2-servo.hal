@@ -40,7 +40,7 @@ loadrt pid num_chan=5
 loadrt hostmot2
 
 # load low-level driver
-loadrt [HOSTMOT2](DRIVER) config=[HOSTMOT2](CONFIG)
+loadrt [HOSTMOT2](DRIVER) [HOSTMOT2](IPADDR) config=[HOSTMOT2](CONFIG)
 
 #setp hm2_[HOSTMOT2](BOARD).0.pwmgen.pwm_frequency 40000
 
@@ -473,6 +473,34 @@ setp hm2_[HOSTMOT2](BOARD).0.stepgen.04.dirhold   [HOSTMOT2]DIR_HOLD
 
 net emcmot.05.motor-pos-cmd joint.5.motor-pos-cmd
 net emcmot.05.motor-pos-cmd joint.5.motor-pos-fb
+
+## Co-opted for Rotary Table
+
+# axis enable chain
+newsig emcmot.05.enable bit
+sets emcmot.05.enable FALSE
+net emcmot.05.enable => hm2_[HOSTMOT2](BOARD).0.stepgen.05.enable
+net emcmot.05.enable <= joint.5.amp-enable-out
+
+# position command signals
+setp hm2_[HOSTMOT2](BOARD).0.stepgen.05.control-type 0
+setp hm2_[HOSTMOT2](BOARD).0.stepgen.05.position-scale [JOINT_5]OUTPUT_SCALE
+setp hm2_[HOSTMOT2](BOARD).0.stepgen.05.maxvel         [JOINT_5]STEPGEN_MAX_VEL
+setp hm2_[HOSTMOT2](BOARD).0.stepgen.05.maxaccel       [JOINT_5]STEPGEN_MAX_ACC
+
+# Position mode control signal
+net emcmot.05.motor-pos-cmd joint.5.motor-pos-cmd => hm2_[HOSTMOT2](BOARD).0.stepgen.05.position-cmd
+
+# Stepper parameters
+#setp hm2_[HOSTMOT2](BOARD).0.stepgen.05.step_type 0
+#setp hm2_[HOSTMOT2](BOARD).0.stepgen.05.steplen   [HOSTMOT2]STEP_LEN
+#setp hm2_[HOSTMOT2](BOARD).0.stepgen.05.stepspace [HOSTMOT2]STEP_SPACE
+#setp hm2_[HOSTMOT2](BOARD).0.stepgen.05.dirsetup  [HOSTMOT2]DIR_SETUP
+#setp hm2_[HOSTMOT2](BOARD).0.stepgen.05.dirhold   [HOSTMOT2]DIR_HOLD
+setp hm2_[HOSTMOT2](BOARD).0.stepgen.05.steplen   8000
+setp hm2_[HOSTMOT2](BOARD).0.stepgen.05.stepspace 8000
+setp hm2_[HOSTMOT2](BOARD).0.stepgen.05.dirsetup  8000
+setp hm2_[HOSTMOT2](BOARD).0.stepgen.05.dirhold   8000
 
 
 # ##################################################
