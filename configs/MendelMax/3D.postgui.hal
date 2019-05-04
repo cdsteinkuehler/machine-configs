@@ -6,3 +6,12 @@ net e0.temp.meas => pyvcp.E0.Temp
 net bed.temp.set  => pyvcp.Bed.Temp.set
 net bed.temp.meas => pyvcp.Bed.Temp
 
+loadrt time
+loadrt not
+addf time.0 servo-thread
+addf not.0 servo-thread
+#net prog-running not.0.in <= halui.program.is-idle
+net cycle-timer time.0.start <= not.0.out
+net cycle-seconds pyvcp.time-seconds <= time.0.seconds
+net cycle-minutes pyvcp.time-minutes <= time.0.minutes
+net cycle-hours pyvcp.time-hours <= time.0.hours
