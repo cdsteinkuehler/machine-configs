@@ -1,0 +1,273 @@
+# #######################################
+#
+# HAL file for BeagleBone + CRAMPS cape with 4 steppers
+#
+# Derived from example hm2-stepper config
+#
+# ########################################
+
+# Launch the setup script to make sure hardware setup looks good
+#loadusr -w /home/machinekit/machinekit/configs/ARM.BeagleBone.CRAMPS/setup.sh
+loadusr -w ./setup.sh
+loadusr -w config-pin -f ./CRAMPS.bbio
+
+
+# ###################################
+# Core EMC/HAL Loads
+# ###################################
+# kinematics
+loadrt trivkins
+#loadrt core_xy_kins
+
+# trajectory planner
+loadrt tp
+
+# motion controller, get name and thread periods from ini file
+loadrt [EMCMOT]EMCMOT servo_period_nsec=[EMCMOT]SERVO_PERIOD num_joints=[TRAJ]AXES tp=tp kins=trivkins
+
+# load low-level drivers
+loadrt hal_bb_gpio output_pins=816,822,823,824,825,826,914,923,925 input_pins=807,808,809,810,817,911,913
+loadrt [PRUCONF](DRIVER) prucode=$(HAL_RTMOD_DIR)/[PRUCONF](PRUBIN) [PRUCONF](CONFIG)
+newinst gantry gantry.0 pincount=2
+
+
+# ################################################
+# THREADS
+# ################################################
+# hpg = [PRUCONF](DRIVER)
+addf hpg.capture-position                 servo-thread
+addf bb_gpio.read                         servo-thread
+addf gantry.0.read                        servo-thread
+addf motion-command-handler               servo-thread
+addf motion-controller                    servo-thread
+addf gantry.0.write                       servo-thread
+addf hpg.update                           servo-thread
+addf bb_gpio.write                        servo-thread
+
+
+# ######################################################
+# Axis-of-motion Specific Configs (not the GUI)
+# ######################################################
+
+# ################
+# X [0] Axis
+# ################
+
+# axis enable chain
+net x.enable axis.0.amp-enable-out => hpg.stepgen.00.enable
+
+# position command and feedback
+net x.pos-cmd <= axis.0.motor-pos-cmd
+net x.pos-cmd => hpg.stepgen.00.position-cmd
+
+net x.pos-fb <= hpg.stepgen.00.position-fb
+net x.pos-fb => axis.0.motor-pos-fb
+
+# Home/Limit Switch:
+newsig	limit-x-min bit
+net	limit-x-min <= bb_gpio.p8.in-08
+setp	bb_gpio.p8.in-08.invert 1
+net	limit-x-min => axis.0.home-sw-in
+net	limit-x-min => axis.0.neg-lim-sw-in
+
+# Stepgen parameters
+setp hpg.stepgen.00.dirsetup        [AXIS_0]DIRSETUP
+setp hpg.stepgen.00.dirhold         [AXIS_0]DIRHOLD
+setp hpg.stepgen.00.steplen         [AXIS_0]STEPLEN
+setp hpg.stepgen.00.stepspace       [AXIS_0]STEPSPACE
+setp hpg.stepgen.00.position-scale  [AXIS_0]SCALE
+setp hpg.stepgen.00.maxvel          [AXIS_0]STEPGEN_MAX_VEL
+setp hpg.stepgen.00.maxaccel        [AXIS_0]STEPGEN_MAX_ACC
+
+# CRAMPS X axis
+setp hpg.stepgen.00.steppin        813
+setp hpg.stepgen.00.dirpin         812
+
+
+# ################
+# Y [1] Axis
+# ################
+
+# Gantry component used to drive two axes and support homing/de-racking
+
+# y-axis gantry
+# Motion component command & feedback
+net y.pos-cmd  gantry.0.position-cmd     <= axis.1.motor-pos-cmd
+net y.pos-fb   gantry.0.position-fb      => axis.1.motor-pos-fb
+
+# Y1 axis signals
+net y1.pos-cmd gantry.0.joint.00.pos-cmd => hpg.stepgen.01.position-cmd
+net y1.pos-fb  gantry.0.joint.00.pos-fb  <= hpg.stepgen.01.position-fb
+
+# Y2 axis signals
+net y2.pos-cmd gantry.0.joint.01.pos-cmd => hpg.stepgen.03.position-cmd
+net y2.pos-fb  gantry.0.joint.01.pos-fb  <= hpg.stepgen.03.position-fb
+
+# axis enable chain
+net y.enable axis.1.amp-enable-out => hpg.stepgen.01.enable hpg.stepgen.03.enable
+setp gantry.0.search-vel [AXIS_1]HOME_SEARCH_VEL
+
+# Home/Limit Switches:
+# Y1 home switch
+newsig	limit-y-min bit
+net	limit-y-min <= bb_gpio.p8.in-10
+setp	bb_gpio.p8.in-10.invert 1
+
+# Y2 home switch
+newsig	limit-y-max bit
+net	limit-y-max <= bb_gpio.p8.in-09
+setp	bb_gpio.p8.in-09.invert 1
+
+# Connect the gantry homing/limit switch logic
+net limit-y-min		=> gantry.0.joint.00.home
+net limit-y-max		=> gantry.0.joint.01.home
+net home-y 		<= gantry.0.home
+net home-y 		=> axis.1.home-sw-in
+net limit-y		<= gantry.0.limit
+net limit-y		=> axis.1.neg-lim-sw-in
+
+# Stepgen parameters
+setp hpg.stepgen.01.dirsetup        [AXIS_1]DIRSETUP
+setp hpg.stepgen.01.dirhold         [AXIS_1]DIRHOLD
+setp hpg.stepgen.01.steplen         [AXIS_1]STEPLEN
+setp hpg.stepgen.01.stepspace       [AXIS_1]STEPSPACE
+setp hpg.stepgen.01.position-scale  [AXIS_1]SCALE1
+setp hpg.stepgen.01.maxvel          [AXIS_1]STEPGEN_MAX_VEL
+setp hpg.stepgen.01.maxaccel        [AXIS_1]STEPGEN_MAX_ACC
+
+setp hpg.stepgen.03.dirsetup        [AXIS_1]DIRSETUP
+setp hpg.stepgen.03.dirhold         [AXIS_1]DIRHOLD
+setp hpg.stepgen.03.steplen         [AXIS_1]STEPLEN
+setp hpg.stepgen.03.stepspace       [AXIS_1]STEPSPACE
+setp hpg.stepgen.03.position-scale  [AXIS_1]SCALE2
+setp hpg.stepgen.03.maxvel          [AXIS_1]STEPGEN_MAX_VEL
+setp hpg.stepgen.03.maxaccel        [AXIS_1]STEPGEN_MAX_ACC
+
+# Y1: CRAMPS Y Axis
+setp hpg.stepgen.01.steppin        815
+setp hpg.stepgen.01.dirpin         814
+
+# Y2: CRAMPS E0 Axis
+setp hpg.stepgen.03.steppin        916
+setp hpg.stepgen.03.dirpin         912
+
+
+# ################
+# Z [2] Axis
+# ################
+
+# axis enable chain
+net z.enable axis.2.amp-enable-out => hpg.stepgen.02.enable
+
+# position command and feedback
+net z.pos-cmd <= axis.2.motor-pos-cmd
+net z.pos-cmd => hpg.stepgen.02.position-cmd
+
+net z.pos-fb <= hpg.stepgen.02.position-fb
+net z.pos-fb => axis.2.motor-pos-fb
+
+# Home/Limit Switches:
+newsig	limit-z-max bit
+net	limit-z-max <= bb_gpio.p9.in-11
+setp	bb_gpio.p9.in-11.invert 1
+net	limit-z-max => axis.2.home-sw-in
+net	limit-z-max => axis.2.pos-lim-sw-in
+
+# Z Axis probe
+newsig	limit-z-min bit
+net	limit-z-min <= bb_gpio.p9.in-13
+setp	bb_gpio.p9.in-13.invert 1
+net	limit-z-min => motion.probe-input
+
+# Stepgen parameters
+setp hpg.stepgen.02.dirsetup        [AXIS_2]DIRSETUP
+setp hpg.stepgen.02.dirhold         [AXIS_2]DIRHOLD
+setp hpg.stepgen.02.steplen         [AXIS_2]STEPLEN
+setp hpg.stepgen.02.stepspace       [AXIS_2]STEPSPACE
+setp hpg.stepgen.02.position-scale  [AXIS_2]SCALE
+setp hpg.stepgen.02.maxvel          [AXIS_2]STEPGEN_MAX_VEL
+setp hpg.stepgen.02.maxaccel        [AXIS_2]STEPGEN_MAX_ACC
+
+# Z: CRAMPS Z axis
+setp hpg.stepgen.02.steppin        819
+setp hpg.stepgen.02.dirpin         818
+
+
+# ################
+# A [3] Axis
+# ################
+
+# There are two A axis motors, both driven by the same command signal
+# Only one stepgen is used to generate feedback
+
+# axis enable chain
+net a.enable axis.3.amp-enable-out => hpg.stepgen.04.enable hpg.stepgen.05.enable
+
+# position command and feedback
+net a.pos-cmd <= axis.3.motor-pos-cmd
+net a.pos-cmd => hpg.stepgen.04.position-cmd
+net a.pos-cmd => hpg.stepgen.05.position-cmd
+
+net a.pos-fb <= hpg.stepgen.04.position-fb
+net a.pos-fb => axis.3.motor-pos-fb
+
+# Stepgen parameters
+setp hpg.stepgen.04.dirsetup        [AXIS_3]DIRSETUP
+setp hpg.stepgen.04.dirhold         [AXIS_3]DIRHOLD
+setp hpg.stepgen.04.steplen         [AXIS_3]STEPLEN
+setp hpg.stepgen.04.stepspace       [AXIS_3]STEPSPACE
+setp hpg.stepgen.04.position-scale  [AXIS_3]SCALE1
+setp hpg.stepgen.04.maxvel          [AXIS_3]STEPGEN_MAX_VEL
+setp hpg.stepgen.04.maxaccel        [AXIS_3]STEPGEN_MAX_ACC
+
+setp hpg.stepgen.05.dirsetup        [AXIS_3]DIRSETUP
+setp hpg.stepgen.05.dirhold         [AXIS_3]DIRHOLD
+setp hpg.stepgen.05.steplen         [AXIS_3]STEPLEN
+setp hpg.stepgen.05.stepspace       [AXIS_3]STEPSPACE
+setp hpg.stepgen.05.position-scale  [AXIS_3]SCALE2
+setp hpg.stepgen.05.maxvel          [AXIS_3]STEPGEN_MAX_VEL
+setp hpg.stepgen.05.maxaccel        [AXIS_3]STEPGEN_MAX_ACC
+
+# A1: CRAMPS E1 Axis
+setp hpg.stepgen.04.steppin        917
+setp hpg.stepgen.04.dirpin         918
+
+# A2: CRAMPS E2 Axis
+setp hpg.stepgen.05.steppin        924
+setp hpg.stepgen.05.dirpin         926
+
+
+# ##################################################
+# Standard I/O - EStop, Enables, Limit Switches, Etc
+# ##################################################
+
+# Create estop signal chain
+# Drive software estop to hardware
+net estop-out iocontrol.0.user-enable-out => bb_gpio.p8.out-26
+setp bb_gpio.p8.out-26.invert 1
+
+# Monitor estop input from hardware
+net estop-loop bb_gpio.p8.in-17 => iocontrol.0.emc-enable-in
+setp bb_gpio.p8.in-17.invert 1
+
+# create signals for tool loading loopback
+net tool-prep-loop iocontrol.0.tool-prepare => iocontrol.0.tool-prepared
+net tool-change-loop iocontrol.0.tool-change => iocontrol.0.tool-changed
+
+# Axis enable signal (active low)
+net x.enable => bb_gpio.p9.out-14
+setp bb_gpio.p9.out-14.invert 1
+
+# Machine power
+# Use halui.machine.is-on instead?
+net x.enable => bb_gpio.p9.out-23
+
+# Tie machine power signal to the CRAMPS LED
+# Feel free to tie any other signal you like to the LED
+#net x.enable => bb_gpio.p9.out-25
+
+# Unused Limit Switches
+newsig	limit-x-max bit
+net	limit-x-max <= bb_gpio.p8.in-07
+setp	bb_gpio.p8.in-07.invert 1
+

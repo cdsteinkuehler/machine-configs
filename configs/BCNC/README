@@ -1,0 +1,6 @@
+
+This configuration is for the Bamboo CNC machine from Virginia Tech
+
+Hardware is a CRAMPS board with six stepper drivers set for 1/16
+micro-stepping.
+
